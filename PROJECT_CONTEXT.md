@@ -31,7 +31,7 @@ product; the simulated platform below is the first adapter target, not the produ
 | ID | Milestone | Status |
 |----|-----------|--------|
 | M0 | Repo bootstrap & governance | ✅ Done |
-| M1 | Simulated data platform (Airflow + Postgres + PySpark + MinIO, Docker Compose) | 🟨 In progress — T1.1–T1.2 complete |
+| M1 | Simulated data platform (Airflow + Postgres + PySpark + MinIO, Docker Compose) | 🟨 In progress — T1.1–T1.3 complete |
 | M2 | Incident core (listener, incident store, guarded adapters, context collector — no LLM) | ⬜ Not started |
 | M3 | LLM investigator (provider abstraction, investigation loop, data-quality flagship) | ⬜ Not started |
 | M4 | Policy engine + auto-recovery (YAML policies, allowlisted actions, action ledger) | ⬜ Not started |
@@ -49,11 +49,12 @@ Full task breakdown with acceptance criteria: [docs/architecture.md](docs/archit
 | T0.2 Push workflow | Codex | `task/0.2-push-workflow` | ✅ Done | `Get-FileHash` reports governance files identical; `git diff --check` passes; `git push -u origin main` and `git push -u origin task/0.2-push-workflow` succeed | Require every agent to push each successfully completed task commit to GitHub; Git Credential Manager authentication configured and both branches published |
 | T1.1 Compose stack | Codex | `task/1.1-compose-stack` | ✅ Done | `docker compose config --quiet` passes; `docker compose ps --all` reports Postgres, MinIO, Airflow API server, scheduler, and DAG processor healthy; Airflow UI/health and MinIO console return HTTP 200; Airflow reports `LocalExecutor`; `etl_rw` and `agent_ro` connect to `dwh`; `agent_ro` INSERT fails with `permission denied`; MinIO init creates `vendor-drop` | Pinned local stack, named volumes, loopback-only ports, DWH roles, supported Airflow 3 simple auth, README quickstart, ADR 001 |
 | T1.2 Data model + seed | Codex | `task/1.2-data-model-seed` | ✅ Done | `python platform/seed/seed.py` succeeds repeatedly and its embedded checks report 100 customers, 130 customer versions, 30 multi-version customers, 20 products, 240 source/fact sales, total 23370.50, no SCD2 overlaps, exactly one current version per customer, and 3 MinIO vendor files; generation hashes are identical across runs; `docker compose config --quiet`, `python -m py_compile`, and `git diff --check` pass | Added `src`/`stg`/`mart`/`audit` DDL, deterministic CSV generator, idempotent load, SCD2 and fact model, MinIO seed loader, executable benchmark verification |
+| T1.3 Pipelines | Codex | `task/1.3-pipelines` | ✅ Done | Clean custom-image build from official Airflow succeeds with Java 17, PySpark 4.2, and compatible S3/Postgres clients; Airflow discovers 2 DAGs with zero import errors; end-to-end `daily_sales_pipeline` reports all 4 tasks successful and reconstructs 80 removed rows totaling 7339.25, matching an independent CSV calculation; `warehouse_quality_pipeline` succeeds over 240 rows totaling 23370.50; Python compile, Compose validation, and `git diff --check` pass | Added shared Airflow JWT/API signing config, custom runtime image, MinIO sensor, PySpark ingest, idempotent dimensional load, per-file audit, warehouse quality DAG, and failure callback to the future listener URL |
 
 ## Next up
 
-**T1.3 — Pipelines**: add Airflow DAGs for MinIO sensing, PySpark ingestion, SQL
-transformation, fact loading, and audit checks, with failure callbacks targeting a stub URL.
+**T1.4 — Chaos CLI**: add six reproducible fault scenarios and a reset command; verify each
+scenario produces its documented failure or corruption and reset restores a green platform.
 
 ## Open questions for the user
 

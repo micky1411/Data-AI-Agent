@@ -1,7 +1,10 @@
 name: dataops-agent
 
 x-airflow-common: &airflow-common
-  image: ${AIRFLOW_IMAGE:-apache/airflow:3.3.0}
+  image: ${AIRFLOW_IMAGE:-dataops-airflow:3.3.0}
+  build:
+    context: .
+    dockerfile: platform/airflow/Dockerfile
   env_file: .env
   environment: &airflow-environment
     AIRFLOW__CORE__EXECUTOR: LocalExecutor
@@ -12,9 +15,19 @@ x-airflow-common: &airflow-common
     AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:${POSTGRES_PASSWORD}@postgres:5432/airflow
     AIRFLOW__CORE__EXECUTION_API_SERVER_URL: http://airflow-api-server:8080/execution/
     AIRFLOW__API__BASE_URL: http://localhost:8080
+    AIRFLOW__API__SECRET_KEY: ${AIRFLOW_API_SECRET}
+    AIRFLOW__API_AUTH__JWT_SECRET: ${AIRFLOW_JWT_SECRET}
     AIRFLOW__SCHEDULER__ENABLE_HEALTH_CHECK: "true"
+    DWH_DSN: postgresql://etl_rw:${ETL_RW_PASSWORD}@postgres:5432/dwh
+    MINIO_ENDPOINT: http://minio:9000
+    MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+    MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    AGENT_WEBHOOK_URL: ${AGENT_WEBHOOK_URL:-http://host.docker.internal:8000/events/airflow}
+    PYSPARK_PYTHON: python
+    SPARK_LOCAL_IP: 127.0.0.1
   volumes:
     - ./platform/airflow/dags:/opt/airflow/dags
+    - ./platform/spark/jobs:/opt/airflow/spark/jobs:ro
     - airflow_logs:/opt/airflow/logs
   depends_on:
     postgres:

@@ -35,7 +35,7 @@ Prerequisites: Docker Desktop with at least 4 GB of memory available to Docker.
 ```powershell
 Copy-Item .env.example .env
 docker compose config --quiet
-docker compose up --detach
+docker compose up --detach --build
 docker compose ps
 ```
 
@@ -65,3 +65,17 @@ The benchmark contains 100 customers; 30 have two SCD2 versions. Generated CSVs 
 runtime artifacts under `platform/seed/output/` and are intentionally ignored by Git. The
 command fails if database counts, SCD2 invariants, fact/source parity, or the MinIO file count
 do not match the benchmark contract.
+
+### Run a pipeline
+
+After building/restarting the Airflow image, open http://localhost:8080 and trigger
+`daily_sales_pipeline` with `process_date` set to one of `2026-08-15`, `2026-08-16`, or
+`2026-08-17`. Its tasks visibly separate file sensing, PySpark validation/ingestion,
+dimensional fact loading, and reconciliation. `warehouse_quality_pipeline` independently
+checks the complete warehouse. New DAGs are paused by default: switch each DAG on in the UI
+before triggering it. A run triggered while paused remains queued until the DAG is switched on.
+
+```powershell
+docker compose build airflow-api-server
+docker compose up --detach --force-recreate airflow-init airflow-api-server airflow-scheduler airflow-dag-processor
+```
