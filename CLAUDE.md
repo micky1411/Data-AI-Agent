@@ -30,12 +30,18 @@ assumption costs far more than a question.
 Commit only when a task is (a) implemented, (b) **verified** — its acceptance criteria pass,
 with the proof described in the commit message, and (c) **documented** — PROJECT_CONTEXT.md
 updated. One task = one branch = one focused set of commits. Do not batch unrelated changes.
+After every successful task commit, push the current task branch to GitHub and set its
+upstream if needed. A task is not handed off for review until both the commit and push
+succeed. If pushing is blocked by authentication, permissions, or connectivity, report the
+exact error to the user and record the task as locally committed but not yet pushed.
 
 ## Rule 6 — Git workflow
 - Never commit directly to `main` (the initial bootstrap commit is the only exception).
 - Start every task from fresh `main`: `git checkout main && git pull`, then
   `git checkout -b task/<id>-<short-slug>` (e.g. `task/1.2-data-model`).
 - Commit messages reference the task id from PROJECT_CONTEXT.md.
+- Push task branches with `git push -u origin <branch>` after the first commit and
+  `git push` after later commits.
 - The **user** reviews and merges branches into `main`. Agents never merge to `main`.
 - Parallel agent work is allowed only on explicitly disjoint directories.
 
