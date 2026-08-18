@@ -31,7 +31,7 @@ product; the simulated platform below is the first adapter target, not the produ
 | ID | Milestone | Status |
 |----|-----------|--------|
 | M0 | Repo bootstrap & governance | ✅ Done |
-| M1 | Simulated data platform (Airflow + Postgres + PySpark + MinIO, Docker Compose) | ⬜ Not started — **blocked on user installing Docker Desktop** |
+| M1 | Simulated data platform (Airflow + Postgres + PySpark + MinIO, Docker Compose) | 🟨 In progress — T1.1 complete |
 | M2 | Incident core (listener, incident store, guarded adapters, context collector — no LLM) | ⬜ Not started |
 | M3 | LLM investigator (provider abstraction, investigation loop, data-quality flagship) | ⬜ Not started |
 | M4 | Policy engine + auto-recovery (YAML policies, allowlisted actions, action ledger) | ⬜ Not started |
@@ -47,25 +47,24 @@ Full task breakdown with acceptance criteria: [docs/architecture.md](docs/archit
 |------|-------|--------|--------|--------------|-------|
 | T0.1 Bootstrap | Claude (Fable 5) | main (bootstrap exception, Rule 6) | ✅ Done | `git log` shows initial commit; `git diff --no-index CLAUDE.md AGENTS.md` is empty; skeleton dirs exist | Governance files, project context, README, architecture doc, directory skeleton |
 | T0.2 Push workflow | Codex | `task/0.2-push-workflow` | ✅ Done | `Get-FileHash` reports governance files identical; `git diff --check` passes; `git push -u origin main` and `git push -u origin task/0.2-push-workflow` succeed | Require every agent to push each successfully completed task commit to GitHub; Git Credential Manager authentication configured and both branches published |
+| T1.1 Compose stack | Codex | `task/1.1-compose-stack` | ✅ Done | `docker compose config --quiet` passes; `docker compose ps --all` reports Postgres, MinIO, Airflow API server, scheduler, and DAG processor healthy; Airflow UI/health and MinIO console return HTTP 200; Airflow reports `LocalExecutor`; `etl_rw` and `agent_ro` connect to `dwh`; `agent_ro` INSERT fails with `permission denied`; MinIO init creates `vendor-drop` | Pinned local stack, named volumes, loopback-only ports, DWH roles, supported Airflow 3 simple auth, README quickstart, ADR 001 |
 
 ## Next up
 
-**T1.1 — Compose stack**: docker-compose with Airflow (LocalExecutor), Postgres (separate
-`dwh` database + `agent_ro` read-only role), MinIO. Acceptance: `docker compose up` →
-Airflow UI reachable, psql connects as both roles, MinIO console reachable.
-**Prerequisite (user)**: install Docker Desktop (WSL2 backend). Not yet installed as of 2026-08-18.
+**T1.2 — Data model + seed**: add `src`/`stg`/`mart` DDL, realistic deterministic seed
+data with multi-version SCD2 customers, and daily vendor CSV drops into MinIO.
 
 ## Open questions for the user
 
-- Docker Desktop installed yet? (blocks M1)
-- This repo lives inside OneDrive (`Desktop\Data-AI-Agent`). Docker bind-mounts + OneDrive
-  sync can conflict and OneDrive can corrupt live Postgres data files. Recommendation when
-  M1 starts: move the repo out of OneDrive (e.g. `C:\dev\Data-AI-Agent`) or exclude it from
-  sync. Decision pending.
+- (none)
 
 ## Backlog / discovered items
 
-- (empty — agents add out-of-scope discoveries here per Rule 9)
+- Governance commits T0.3/T0.4 (`f811822`, `93ad7f2`) exist on
+  `origin/task/0.2-push-workflow` but were made after PR #1 was merged and are therefore not
+  in `main`. Merge or cherry-pick them separately so the human-authorship rule is present on
+  the default branch. T1.1 still used the required `micky1411 <vibhavkatta123@gmail.com>`
+  local Git identity.
 
 ## Key project decisions (summary)
 
@@ -78,3 +77,5 @@ Airflow UI reachable, psql connects as both roles, MinIO console reachable.
   ([docs/incidents-catalog.md](docs/incidents-catalog.md)); the eval runner scores the agent
   against it. V1 exit bar: ≥ 5 of 6 scenarios pass.
 - **Coding workflow**: agents work mostly one at a time, branch-per-task, user merges.
+- **Local persistence**: mutable PostgreSQL, MinIO, and Airflow log data use Docker named
+  volumes, so live service data is not synchronized through OneDrive.
