@@ -50,3 +50,18 @@ platform data and re-run database initialization, run `docker compose down --vol
 Airflow uses its development-only simple auth manager and grants admin access without login;
 all published ports are restricted to the local machine. This configuration must never be
 used as a production deployment.
+
+### Load the deterministic benchmark data
+
+With the stack running:
+
+```powershell
+python platform/seed/seed.py
+```
+
+This generates the same dataset on every run, loads the `src`, `stg`, `mart`, and `audit`
+warehouse schemas, and uploads three daily sales files to MinIO's `vendor-drop` bucket.
+The benchmark contains 100 customers; 30 have two SCD2 versions. Generated CSVs are local
+runtime artifacts under `platform/seed/output/` and are intentionally ignored by Git. The
+command fails if database counts, SCD2 invariants, fact/source parity, or the MinIO file count
+do not match the benchmark contract.
