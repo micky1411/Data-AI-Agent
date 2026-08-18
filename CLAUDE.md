@@ -66,11 +66,11 @@ scope, add it as a new entry in PROJECT_CONTEXT.md ("Backlog / discovered items"
 expanding your current change.
 
 ## Rule 10 — Human authorship rule
-All repository commits must be authored solely under the user's Git identity, with the
-author name `micky1411`. AI agents must never identify themselves as repository contributors,
+All repository commits must be authored solely under the user's Git identity:
+`micky1411 <vibhavkatta123@gmail.com>`. AI agents must never identify themselves as repository contributors,
 commit authors, or co-authors. Do not add AI names, bot identities, generated-by notices, or
 `Co-Authored-By` trailers to commits, pull requests, source files, or documentation. Agent
 identity may appear only in internal operational records such as the PROJECT_CONTEXT.md task
 log, where it is needed for traceability; that record does not imply authorship or ownership.
-Before committing, verify `git config user.name` is `micky1411`. Preserve the user's configured
-email address unless the user explicitly provides a replacement.
+Before committing, verify `git config user.name` is `micky1411` and
+`git config user.email` is `vibhavkatta123@gmail.com`.
