@@ -98,3 +98,22 @@ automatically after 20 seconds by default; use `--transient-seconds N` to change
 Only one scenario may be active at a time. See
 [docs/incidents-catalog.md](docs/incidents-catalog.md) for the benchmark answer key; the
 future investigator is intentionally forbidden from reading it.
+
+### Incident listener
+
+`docker compose up --detach --build` also starts the FastAPI listener on
+http://localhost:8000. Airflow failure callbacks are validated at `POST /events/airflow` and
+stored in the named `agent_data` volume. `GET /incidents` lists cases and
+`GET /incidents/{incident_id}` includes their callback observations and state history.
+Interactive API documentation is available at http://localhost:8000/docs.
+
+For local development and tests:
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\python.exe -m pip install -e ".[test]"
+.\.venv\Scripts\python.exe -m pytest
+```
+
+This listener is local-development infrastructure: its port is loopback-only, but webhook
+authentication is not implemented yet. It must not be exposed to an untrusted network.

@@ -32,7 +32,7 @@ product; the simulated platform below is the first adapter target, not the produ
 |----|-----------|--------|
 | M0 | Repo bootstrap & governance | ✅ Done |
 | M1 | Simulated data platform (Airflow + Postgres + PySpark + MinIO, Docker Compose) | ✅ Done |
-| M2 | Incident core (listener, incident store, guarded adapters, context collector — no LLM) | ⬜ Not started |
+| M2 | Incident core (listener, incident store, guarded adapters, context collector — no LLM) | 🟨 In progress — T2.1 complete |
 | M3 | LLM investigator (provider abstraction, investigation loop, data-quality flagship) | ⬜ Not started |
 | M4 | Policy engine + auto-recovery (YAML policies, allowlisted actions, action ledger) | ⬜ Not started |
 | M5 | Streamlit dashboard (incidents, evidence chains, approve/reject, chaos panel) | ⬜ Not started |
@@ -51,11 +51,13 @@ Full task breakdown with acceptance criteria: [docs/architecture.md](docs/archit
 | T1.2 Data model + seed | Codex | `task/1.2-data-model-seed` | ✅ Done | `python platform/seed/seed.py` succeeds repeatedly and its embedded checks report 100 customers, 130 customer versions, 30 multi-version customers, 20 products, 240 source/fact sales, total 23370.50, no SCD2 overlaps, exactly one current version per customer, and 3 MinIO vendor files; generation hashes are identical across runs; `docker compose config --quiet`, `python -m py_compile`, and `git diff --check` pass | Added `src`/`stg`/`mart`/`audit` DDL, deterministic CSV generator, idempotent load, SCD2 and fact model, MinIO seed loader, executable benchmark verification |
 | T1.3 Pipelines | Codex | `task/1.3-pipelines` | ✅ Done | Clean custom-image build from official Airflow succeeds with Java 17, PySpark 4.2, and compatible S3/Postgres clients; Airflow discovers 2 DAGs with zero import errors; end-to-end `daily_sales_pipeline` reports all 4 tasks successful and reconstructs 80 removed rows totaling 7339.25, matching an independent CSV calculation; `warehouse_quality_pipeline` succeeds over 240 rows totaling 23370.50; Python compile, Compose validation, and `git diff --check` pass | Added shared Airflow JWT/API signing config, custom runtime image, MinIO sensor, PySpark ingest, idempotent dimensional load, per-file audit, warehouse quality DAG, and failure callback to the future listener URL |
 | T1.4 Chaos CLI | Codex | `task/1.4-chaos-cli` | ✅ Done | Live injections proved: missing object returns MinIO 404; corrupt delimiter and renamed header fail ingest with distinct actual/expected header evidence; transient Postgres stops and auto-recovers healthy; duplicates load 90 daily/250 warehouse rows and warehouse audit fails at 24230.75; faulty SCD2 join turns 80 staged into 104 fact rows and 7339.25 into 9756.50 while the daily audit records an anomaly; reset then passes ingest/load/daily audit and warehouse audit at 240 rows/23370.50; all services healthy; compile, Compose validation, and `git diff --check` pass | Added six mutually exclusive deterministic injections, delayed DB recovery, canonical reset/status, runtime-only scenario state, strict CSV contract validation, benchmark-aware warehouse audit, full ground-truth catalog, and README usage |
+| T2.1 Listener + store | Codex | `task/2.1-listener-store` | ✅ Done | `pytest` passes 5 tests including eight concurrent duplicate callbacks yielding one incident/event_count 8, payload rejection, and state-transition enforcement; listener image builds and is healthy; duplicate live HTTP events return one persistent incident across container restart; a real Airflow corrupt-file run creates exactly one DETECTED incident with DAG `daily_sales_pipeline`, task `pyspark_ingest`, and run `t2_1_corrupt_live`; reset restores the benchmark; compile, Compose validation, governance sync, and `git diff --check` pass | Added pinned Python package, FastAPI service, strict Airflow event contract, transactional SQLite/WAL store, `(dag_id, run_id)` dedupe, immutable callback observations, auditable state history, REST reads/transitions, non-root container, persistent named volume, tests, and local-development docs |
 
 ## Next up
 
-**T2.1 — Listener + store**: receive Airflow failure callbacks, persist incidents with the
-defined state machine, and deduplicate repeated callbacks for the same DAG run.
+**T2.2 — Guarded adapters**: implement the Airflow, warehouse, MinIO, and repository read
+adapters plus tests proving query limits, statement timeouts, schema allowlists, DML/DDL
+rejection, and strict separation of investigator reads from recovery writes.
 
 ## Open questions for the user
 
@@ -68,6 +70,9 @@ defined state machine, and deduplicate repeated callbacks for the same DAG run.
   in `main`. Merge or cherry-pick them separately so the human-authorship rule is present on
   the default branch. T1.1 still used the required `micky1411 <vibhavkatta123@gmail.com>`
   local Git identity.
+- The T2.1 listener has no webhook authentication. Its port is loopback-only for local
+  development, but signed callbacks/authentication and key rotation are required before any
+  shared or production deployment.
 
 ## Key project decisions (summary)
 

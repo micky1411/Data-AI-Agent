@@ -1,0 +1,7 @@
+.git
+.venv
+__pycache__
+*.pyc
+*.sqlite*
+platform/seed/output
+platform/chaos/state

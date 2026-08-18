@@ -22,7 +22,7 @@ x-airflow-common: &airflow-common
     MINIO_ENDPOINT: http://minio:9000
     MINIO_ROOT_USER: ${MINIO_ROOT_USER}
     MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
-    AGENT_WEBHOOK_URL: ${AGENT_WEBHOOK_URL:-http://host.docker.internal:8000/events/airflow}
+    AGENT_WEBHOOK_URL: http://agent-listener:8000/events/airflow
     PYSPARK_PYTHON: python
     SPARK_LOCAL_IP: 127.0.0.1
   volumes:
@@ -38,6 +38,24 @@ x-airflow-common: &airflow-common
   restart: unless-stopped
 
 services:
+  agent-listener:
+    build:
+      context: .
+      dockerfile: agent/listener/Dockerfile
+    environment:
+      INCIDENT_DB_PATH: /data/incidents.sqlite3
+    ports:
+      - "127.0.0.1:${AGENT_PORT:-8000}:8000"
+    volumes:
+      - agent_data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+    restart: unless-stopped
+
   postgres:
     image: postgres:18.4-alpine
     environment:
@@ -155,6 +173,7 @@ services:
         echo "Verified $${object_count} daily vendor files in MinIO."
 
 volumes:
+  agent_data:
   postgres_data:
   minio_data:
   airflow_logs:
