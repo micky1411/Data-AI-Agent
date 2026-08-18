@@ -46,6 +46,7 @@ Full task breakdown with acceptance criteria: [docs/architecture.md](docs/archit
 | Task | Agent | Branch | Status | Verification | Notes |
 |------|-------|--------|--------|--------------|-------|
 | T0.1 Bootstrap | Claude (Fable 5) | main (bootstrap exception, Rule 6) | ✅ Done | `git log` shows initial commit; `git diff --no-index CLAUDE.md AGENTS.md` is empty; skeleton dirs exist | Governance files, project context, README, architecture doc, directory skeleton |
+| T0.2 Push workflow | Codex | `task/0.2-push-workflow` | 🟨 Locally complete; push blocked | `Get-FileHash` reports governance files identical; `git diff --check` passes; `git push -u origin main` fails with `SEC_E_NO_CREDENTIALS` | Require every agent to push each successfully completed task commit to GitHub; GitHub authentication must be configured before bootstrap and task branch can be published |
 
 ## Next up
 
