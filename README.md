@@ -30,5 +30,23 @@ Read [CLAUDE.md](CLAUDE.md) (Claude) or [AGENTS.md](AGENTS.md) (others) first, t
 
 ## Quickstart
 
-Not yet — arrives with Milestone 1 (`docker compose up` for the platform) and Milestone 6
-(full demo walkthrough).
+Prerequisites: Docker Desktop with at least 4 GB of memory available to Docker.
+
+```powershell
+Copy-Item .env.example .env
+docker compose config --quiet
+docker compose up --detach
+docker compose ps
+```
+
+- Airflow UI: http://localhost:8080
+- MinIO console: http://localhost:9001
+- PostgreSQL: `localhost:5432` (`airflow` and `dwh` databases)
+
+Credentials are the local-only values in `.env`. Change them freely; `.env` is ignored by
+Git. Persistent service data uses named Docker volumes rather than OneDrive-backed bind
+mounts. To stop the stack, run `docker compose down`. To deliberately delete all local
+platform data and re-run database initialization, run `docker compose down --volumes`.
+Airflow uses its development-only simple auth manager and grants admin access without login;
+all published ports are restricted to the local machine. This configuration must never be
+used as a production deployment.
