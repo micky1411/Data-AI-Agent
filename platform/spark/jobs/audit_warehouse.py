@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from decimal import Decimal
+
 from job_common import connect
 
 
@@ -24,7 +26,13 @@ def main() -> None:
             fact_count = scalar(cursor, "SELECT count(*) FROM mart.sales_fact")
             source_total = scalar(cursor, "SELECT sum(quantity * unit_price) FROM src.sales")
             fact_total = scalar(cursor, "SELECT sum(total_amount) FROM mart.sales_fact")
-            if current_errors or source_count != fact_count or source_total != fact_total:
+            if (
+                current_errors
+                or source_count != fact_count
+                or source_total != fact_total
+                or source_count != 240
+                or source_total != Decimal("23370.50")
+            ):
                 raise RuntimeError(
                     f"warehouse quality failed current_errors={current_errors} "
                     f"source_count={source_count} fact_count={fact_count} "

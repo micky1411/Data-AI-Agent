@@ -28,6 +28,7 @@ x-airflow-common: &airflow-common
   volumes:
     - ./platform/airflow/dags:/opt/airflow/dags
     - ./platform/spark/jobs:/opt/airflow/spark/jobs:ro
+    - ./platform/chaos/state:/opt/airflow/chaos:ro
     - airflow_logs:/opt/airflow/logs
   depends_on:
     postgres:

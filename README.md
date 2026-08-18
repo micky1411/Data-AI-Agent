@@ -79,3 +79,22 @@ before triggering it. A run triggered while paused remains queued until the DAG 
 docker compose build airflow-api-server
 docker compose up --detach --force-recreate airflow-init airflow-api-server airflow-scheduler airflow-dag-processor
 ```
+
+### Inject a benchmark incident
+
+The chaos CLI changes the `2026-08-15` input or platform in one controlled way. Reset before
+switching scenarios; reset regenerates and verifies the complete deterministic baseline.
+
+```powershell
+python platform/chaos/chaos.py status
+python platform/chaos/chaos.py inject missing_file
+# Trigger daily_sales_pipeline with process_date=2026-08-15 and inspect the run.
+python platform/chaos/chaos.py reset
+```
+
+Available scenarios are `missing_file`, `corrupt_file`, `db_transient_down`,
+`schema_change`, `scd2_join_bug`, and `duplicate_source_rows`. The database outage restarts
+automatically after 20 seconds by default; use `--transient-seconds N` to change that window.
+Only one scenario may be active at a time. See
+[docs/incidents-catalog.md](docs/incidents-catalog.md) for the benchmark answer key; the
+future investigator is intentionally forbidden from reading it.

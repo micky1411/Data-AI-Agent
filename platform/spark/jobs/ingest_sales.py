@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import csv
 import os
 import tempfile
 from pathlib import Path
@@ -34,6 +35,13 @@ def main() -> None:
     with tempfile.TemporaryDirectory(prefix="dataops-sales-") as temp_dir:
         local_file = Path(temp_dir) / file_name
         client.download_file("vendor-drop", file_name, str(local_file))
+        with local_file.open(newline="", encoding="utf-8") as handle:
+            actual_header = next(csv.reader(handle), [])
+        expected_header = schema.fieldNames()
+        if actual_header != expected_header:
+            raise ValueError(
+                f"vendor schema mismatch expected={expected_header} actual={actual_header}"
+            )
         spark = (
             SparkSession.builder.master("local[2]")
             .appName(f"ingest-{file_name}")
