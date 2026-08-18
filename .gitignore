@@ -20,6 +20,8 @@ venv/
 platform/.volumes/
 platform/seed/output/*
 !platform/seed/output/.gitkeep
+platform/chaos/state/*
+!platform/chaos/state/.gitkeep
 logs/
 *.log
 
