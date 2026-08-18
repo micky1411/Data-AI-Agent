@@ -64,3 +64,13 @@ the exact commands proving it are recorded in the task log. "It should work" is 
 Do only the assigned task. If you discover a bug, gap, or good idea outside your task's
 scope, add it as a new entry in PROJECT_CONTEXT.md ("Backlog / discovered items") instead of
 expanding your current change.
+
+## Rule 10 — Human authorship rule
+All repository commits must be authored solely under the user's Git identity, with the
+author name `micky1411`. AI agents must never identify themselves as repository contributors,
+commit authors, or co-authors. Do not add AI names, bot identities, generated-by notices, or
+`Co-Authored-By` trailers to commits, pull requests, source files, or documentation. Agent
+identity may appear only in internal operational records such as the PROJECT_CONTEXT.md task
+log, where it is needed for traceability; that record does not imply authorship or ownership.
+Before committing, verify `git config user.name` is `micky1411`. Preserve the user's configured
+email address unless the user explicitly provides a replacement.
